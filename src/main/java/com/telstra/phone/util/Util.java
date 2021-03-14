@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.telstra.phone.dto.Dir;
-import com.telstra.phone.dto.SearchDto;
+import com.telstra.phone.dto.SortDto;
 
 public final class Util {
 	private static final Logger log = LoggerFactory.getLogger(Util.class);
@@ -14,7 +14,7 @@ public final class Util {
 		return StringUtils.isBlank(cs);
 	}
 
-	public static final SearchDto getSearchDto(final int start, final int limit, final String sort, final String dir) {
+	public static final SortDto getSortDto(final int start, final int limit, final String sort, final String dir) {
 		int beg = (start < 0) ? 0 : start;
 		int end = (limit < 0) ? 0 : limit;
 		Dir direction = Dir.ASC;
@@ -25,7 +25,7 @@ public final class Util {
 			log.error("Incorrect direction", e);
 		}
 		String sortBy = isEmpty(sort) ? sort : sort.trim().toLowerCase();
-		SearchDto dto = new SearchDto(beg, end, sortBy, direction);
+		SortDto dto = new SortDto(beg, end, sortBy, direction);
 		return dto;
 	}
 

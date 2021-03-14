@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.telstra.phone.controller.IPhoneController;
 import com.telstra.phone.dto.PhoneActivateDto;
-import com.telstra.phone.dto.SearchDto;
+import com.telstra.phone.dto.SortDto;
 import com.telstra.phone.service.IPhoneService;
 import com.telstra.phone.util.Util;
 
@@ -50,11 +50,11 @@ public final class PhoneController implements IPhoneController {
 			@RequestParam(required = false, defaultValue = DEFAULT_SORT) final String sort,
 			@RequestParam(required = false, defaultValue = DEFAULT_DIR) final String dir,
 			@RequestParam(required = false, defaultValue = "") final String customerId) {
-		SearchDto search = Util.getSearchDto(start, limit > SRCH_MAX_LIMIT ? SRCH_MAX_LIMIT : limit, sort, dir);
+		SortDto sortDto = Util.getSortDto(start, limit > SRCH_MAX_LIMIT ? SRCH_MAX_LIMIT : limit, sort, dir);
 		if (isEmpty(customerId)) {
-			return new ResponseEntity<Collection<String>>(phoneService.list(search), HttpStatus.OK);
+			return new ResponseEntity<Collection<String>>(phoneService.list(sortDto), HttpStatus.OK);
 		} else {
-			Collection<String> phones = phoneService.listByCustomer(search, customerId);
+			Collection<String> phones = phoneService.listByCustomer(sortDto, customerId);
 			return new ResponseEntity<Collection<String>>(phones, HttpStatus.OK);
 		}
 	}

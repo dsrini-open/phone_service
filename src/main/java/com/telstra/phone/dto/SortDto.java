@@ -3,13 +3,13 @@ package com.telstra.phone.dto;
 import lombok.Data;
 
 @Data
-public class SearchDto {
+public class SortDto {
 	private int start;
 	private int limit;
 	private String sort;
 	private Dir dir = Dir.ASC;
 
-	public SearchDto(int start, int limit, String sort, Dir dir) {
+	public SortDto(int start, int limit, String sort, Dir dir) {
 		this.start = start;
 		this.limit = this.start + limit;
 		this.sort = sort;

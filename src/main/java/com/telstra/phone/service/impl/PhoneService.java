@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.telstra.phone.dto.Dir;
 import com.telstra.phone.dto.PhoneActivateDto;
-import com.telstra.phone.dto.SearchDto;
+import com.telstra.phone.dto.SortDto;
 import com.telstra.phone.exception.BadRequestException;
 import com.telstra.phone.exception.DuplicateRequestException;
 import com.telstra.phone.exception.ResourceNotFoundException;
@@ -36,8 +36,8 @@ public class PhoneService implements IPhoneService {
 	private static final String CUSTOMER_REGEX = "^[A-Za-z0-9]+$";
 	private static final String IMEI_REGEX = "^[0-9]{15}$";
 
-	private static final Comparator<Phone> getComp(final SearchDto search) {
-		final String sort = Optional.ofNullable(search.getSort()).orElse("number");
+	private static final Comparator<Phone> getComp(final SortDto sortDto) {
+		final String sort = Optional.ofNullable(sortDto.getSort()).orElse("number");
 		Comparator<Phone> sortCmp = Comparator.comparing(Phone::getNumber);
 		switch (sort) {
 		case "region":
@@ -50,7 +50,7 @@ public class PhoneService implements IPhoneService {
 			sortCmp = Comparator.comparing(Phone::getActivationDate, Comparator.nullsFirst(Comparator.naturalOrder()));
 			break;
 		}
-		if (search.getDir().equals(Dir.DESC))
+		if (sortDto.getDir().equals(Dir.DESC))
 			sortCmp = sortCmp.reversed();
 		return sortCmp;
 	}
@@ -79,10 +79,10 @@ public class PhoneService implements IPhoneService {
 	}
 
 	@Override
-	public Collection<String> list(final SearchDto search) {
-		log.debug("Search for {}", search);
+	public Collection<String> list(final SortDto sort) {
+		log.debug("Search for {}", sort);
 
-		Collection<Phone> phones = this.phoneRepo.findAllBy(search, getComp(search));
+		Collection<Phone> phones = this.phoneRepo.findAllBy(sort, getComp(sort));
 
 		Collection<String> numbers = PhoneService.getNumbers(phones);
 
@@ -91,12 +91,12 @@ public class PhoneService implements IPhoneService {
 	}
 
 	@Override
-	public Collection<String> listByCustomer(final SearchDto search, final String customerId) {
+	public Collection<String> listByCustomer(final SortDto sort, final String customerId) {
 
 		if (Util.isEmpty(customerId) || !customerId.matches(CUSTOMER_REGEX))
 			throw new BadRequestException(CUSTOMER_REGEX_EXC);
 
-		Optional<Collection<Phone>> phones = phoneRepo.findByCustomer(search, getComp(search), customerId);
+		Optional<Collection<Phone>> phones = phoneRepo.findByCustomer(sort, getComp(sort), customerId);
 
 		if (!phones.isPresent())
 			throw new ResourceNotFoundException(DATA_NF_EXC);

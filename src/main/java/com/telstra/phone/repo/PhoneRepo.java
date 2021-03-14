@@ -17,7 +17,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Repository;
 
-import com.telstra.phone.dto.SearchDto;
+import com.telstra.phone.dto.SortDto;
 import com.telstra.phone.exception.ImproperDataException;
 import com.telstra.phone.model.Phone;
 import com.telstra.phone.util.Util;
@@ -77,18 +77,18 @@ public class PhoneRepo implements IRepo<Phone> {
 		// in-memory updates, skipping
 	}
 
-	public Collection<Phone> findAllBy(final SearchDto search, final Comparator<Phone> comp) {
-		return doSort(phonesData, search.getStart(), search.getLimit(), comp);
+	public Collection<Phone> findAllBy(final SortDto sort, final Comparator<Phone> comp) {
+		return doSort(phonesData, sort.getStart(), sort.getLimit(), comp);
 	}
 
-	public Optional<Collection<Phone>> findByCustomer(final SearchDto search, final Comparator<Phone> comp,
+	public Optional<Collection<Phone>> findByCustomer(final SortDto sort, final Comparator<Phone> comp,
 			final String customerId) {
 		if (Util.isEmpty(customerId))
 			throw new ImproperDataException();
 
 		Collection<Phone> phones = customerIndex.get(customerId);
 		if (null != phones) {
-			return Optional.of(doSort(phones, search.getStart(), search.getLimit(), comp));
+			return Optional.of(doSort(phones, sort.getStart(), sort.getLimit(), comp));
 		}
 		return Optional.empty();
 

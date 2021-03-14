@@ -35,7 +35,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.telstra.phone.dto.Dir;
 import com.telstra.phone.dto.PhoneActivateDto;
-import com.telstra.phone.dto.SearchDto;
+import com.telstra.phone.dto.SortDto;
 import com.telstra.phone.exception.BadRequestException;
 import com.telstra.phone.exception.DuplicateRequestException;
 import com.telstra.phone.exception.ResourceNotFoundException;
@@ -58,7 +58,7 @@ public class PhoneServiceTest {
 	private PhoneRepo repo;
 
 	@Captor
-	private ArgumentCaptor<SearchDto> searchCaptor;
+	private ArgumentCaptor<SortDto> sortCaptor;
 
 	@Captor
 	private ArgumentCaptor<String> stringCaptor;
@@ -83,20 +83,20 @@ public class PhoneServiceTest {
 	@CsvSource(value = { "number,ASC,0", "region,DESC,-1", "activationdate,ASC,1", "customerid,DESC,-2" })
 	public void testList_success(final String sort, final String dir, final int assertOutput) {
 
-		SearchDto search = mock(SearchDto.class);
+		SortDto sortDto = mock(SortDto.class);
 		List<Phone> phones = mock(ArrayList.class);
 
-		when(repo.findAllBy(any(SearchDto.class), any(Comparator.class))).thenReturn(phones);
-		when(search.getSort()).thenReturn(sort);
-		when(search.getDir()).thenReturn(Dir.valueOf(dir));
+		when(repo.findAllBy(any(SortDto.class), any(Comparator.class))).thenReturn(phones);
+		when(sortDto.getSort()).thenReturn(sort);
+		when(sortDto.getDir()).thenReturn(Dir.valueOf(dir));
 
-		service.list(search);
+		service.list(sortDto);
 
-		verify(search).getSort();
-		verify(search).getDir();
-		verify(repo).findAllBy(searchCaptor.capture(), compCaptor.capture());
+		verify(sortDto).getSort();
+		verify(sortDto).getDir();
+		verify(repo).findAllBy(sortCaptor.capture(), compCaptor.capture());
 
-		assertEquals(searchCaptor.getValue(), search);
+		assertEquals(sortCaptor.getValue(), sortDto);
 
 		Comparator<Phone> serviceComp = compCaptor.getValue();
 
@@ -115,40 +115,40 @@ public class PhoneServiceTest {
 	@ValueSource(strings = { "INVALID-CUSTOMER", "/./,;", "*TEXT", "!", "@" })
 	public void testListByCustomer_BadRequestException(final String custId) {
 
-		when(repo.findByCustomer(any(SearchDto.class), any(Comparator.class), anyString()))
+		when(repo.findByCustomer(any(SortDto.class), any(Comparator.class), anyString()))
 				.thenReturn(Optional.empty());
 
-		final SearchDto search = mock(SearchDto.class);
+		final SortDto sortDto = mock(SortDto.class);
 
 		BadRequestException thrown = assertThrows(BadRequestException.class, () -> {
-			service.listByCustomer(search, custId);
+			service.listByCustomer(sortDto, custId);
 		});
 
 		assertEquals(CUSTOMER_REGEX_EXC, thrown.getMessage());
 
-		verify(repo, times(0)).findByCustomer(any(SearchDto.class), any(Comparator.class), anyString());
+		verify(repo, times(0)).findByCustomer(any(SortDto.class), any(Comparator.class), anyString());
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "VALIDCUSTOMER", "C123", "123A" })
 	public void testListByCustomer_ResourceNotFoundException(final String custId) {
 
-		final SearchDto search = mock(SearchDto.class);
+		final SortDto sortDto = mock(SortDto.class);
 
-		when(search.getSort()).thenReturn(null);
-		when(search.getDir()).thenReturn(Dir.ASC);
+		when(sortDto.getSort()).thenReturn(null);
+		when(sortDto.getDir()).thenReturn(Dir.ASC);
 
-		when(repo.findByCustomer(any(SearchDto.class), any(Comparator.class), anyString()))
+		when(repo.findByCustomer(any(SortDto.class), any(Comparator.class), anyString()))
 				.thenReturn(Optional.empty());
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () -> {
-			service.listByCustomer(search, custId);
+			service.listByCustomer(sortDto, custId);
 		});
 
 		assertEquals(DATA_NF_EXC, thrown.getMessage());
 
-		verify(repo).findByCustomer(searchCaptor.capture(), compCaptor.capture(), stringCaptor.capture());
+		verify(repo).findByCustomer(sortCaptor.capture(), compCaptor.capture(), stringCaptor.capture());
 
-		assertEquals(search, searchCaptor.getValue());
+		assertEquals(sortDto, sortCaptor.getValue());
 		assertEquals(custId, stringCaptor.getValue());
 		assertNotNull(compCaptor.getValue());
 
@@ -158,27 +158,27 @@ public class PhoneServiceTest {
 	@CsvSource(value = { "VALIDCUSTOMER,1234|567", "C123,1234", "123A,567|892|1234543" })
 	public void testListByCustomer_valid(final String custId, final String phoneList) {
 
-		final SearchDto search = mock(SearchDto.class);
+		final SortDto sortDto = mock(SortDto.class);
 
-		when(search.getSort()).thenReturn(null);
-		when(search.getDir()).thenReturn(Dir.ASC);
+		when(sortDto.getSort()).thenReturn(null);
+		when(sortDto.getDir()).thenReturn(Dir.ASC);
 		
 		final String[] phones = phoneList.split("\\|");
 		final Collection<Phone> coll = Arrays.stream(phones).map(p -> new Phone(p, null, null))
 				.collect(Collectors.toList());
 
-		when(repo.findByCustomer(any(SearchDto.class), any(Comparator.class), anyString()))
+		when(repo.findByCustomer(any(SortDto.class), any(Comparator.class), anyString()))
 				.thenReturn(Optional.of(coll));
 
-		final Collection<String> ret = service.listByCustomer(search, custId);
+		final Collection<String> ret = service.listByCustomer(sortDto, custId);
 
 		assertThat(ret, containsInAnyOrder(phones));
 
-		verify(search).getSort();
-		verify(search).getDir();
-		verify(repo).findByCustomer(searchCaptor.capture(), compCaptor.capture(), stringCaptor.capture());
+		verify(sortDto).getSort();
+		verify(sortDto).getDir();
+		verify(repo).findByCustomer(sortCaptor.capture(), compCaptor.capture(), stringCaptor.capture());
 
-		assertEquals(search, searchCaptor.getValue());
+		assertEquals(sortDto, sortCaptor.getValue());
 		assertEquals(custId, stringCaptor.getValue());
 		assertNotNull(compCaptor.getValue());
 

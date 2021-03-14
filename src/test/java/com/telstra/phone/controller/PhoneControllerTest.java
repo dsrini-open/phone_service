@@ -31,14 +31,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.telstra.phone.controller.impl.PhoneController;
 import com.telstra.phone.dto.Dir;
 import com.telstra.phone.dto.PhoneActivateDto;
-import com.telstra.phone.dto.SearchDto;
+import com.telstra.phone.dto.SortDto;
 import com.telstra.phone.service.IPhoneService;
 
 public class PhoneControllerTest {
 
 	private static int SRCH_MAX_LIMIT = 15;
-
-	private static final String _EMPTY_CUST_ID = "";
 
 	private IPhoneController controller;
 
@@ -46,7 +44,7 @@ public class PhoneControllerTest {
 	private IPhoneService service;
 
 	@Captor
-	private ArgumentCaptor<SearchDto> searchCaptor;
+	private ArgumentCaptor<SortDto> sortCaptor;
 
 	@Captor
 	private ArgumentCaptor<String> stringCaptor;
@@ -70,13 +68,13 @@ public class PhoneControllerTest {
 		@SuppressWarnings("unchecked")
 		Collection<String> invMock = mock(Collection.class);
 
-		when(service.list(any(SearchDto.class))).thenReturn(mockResp);
-		when(service.listByCustomer(any(SearchDto.class), anyString())).thenReturn(invMock);
+		when(service.list(any(SortDto.class))).thenReturn(mockResp);
+		when(service.listByCustomer(any(SortDto.class), anyString())).thenReturn(invMock);
 		final ResponseEntity<Collection<String>> resp = controller.list(start, limit, sort, dir, custId);
 
-		verify(service).list(searchCaptor.capture());
-		verify(service, times(0)).listByCustomer(any(SearchDto.class), anyString());
-		SearchDto contDto = searchCaptor.getValue();
+		verify(service).list(sortCaptor.capture());
+		verify(service, times(0)).listByCustomer(any(SortDto.class), anyString());
+		SortDto contDto = sortCaptor.getValue();
 
 		assertEquals(resp.getStatusCode(), HttpStatus.OK);
 		assertEquals(start, contDto.getStart());
@@ -97,13 +95,13 @@ public class PhoneControllerTest {
 		Collection<String> invMock = mock(Collection.class);
 		
 
-		when(service.list(any(SearchDto.class))).thenReturn(mockResp);
-		when(service.listByCustomer(any(SearchDto.class), anyString())).thenReturn(invMock);
+		when(service.list(any(SortDto.class))).thenReturn(mockResp);
+		when(service.listByCustomer(any(SortDto.class), anyString())).thenReturn(invMock);
 		final ResponseEntity<Collection<String>> resp = controller.list(start, limit, sort, dir, custId);
 
-		verify(service).list(searchCaptor.capture());
-		verify(service, times(0)).listByCustomer(any(SearchDto.class), anyString());
-		SearchDto contDto = searchCaptor.getValue();
+		verify(service).list(sortCaptor.capture());
+		verify(service, times(0)).listByCustomer(any(SortDto.class), anyString());
+		SortDto contDto = sortCaptor.getValue();
 
 		assertEquals(0, contDto.getStart());
 		assertEquals(limit > SRCH_MAX_LIMIT ? SRCH_MAX_LIMIT : limit, contDto.getLimit());
@@ -115,7 +113,7 @@ public class PhoneControllerTest {
 
 	@Test
 	public void testList_exception() {
-		doThrow(RuntimeException.class).when(service).list(any(SearchDto.class));
+		doThrow(RuntimeException.class).when(service).list(any(SortDto.class));
 
 		RuntimeException exc = assertThrows(RuntimeException.class, () -> {
 			controller.list(anyInt(), anyInt(), anyString(), anyString(), null);
@@ -135,13 +133,13 @@ public class PhoneControllerTest {
 		@SuppressWarnings("unchecked")
 		Collection<String> invMock = mock(Collection.class);
 
-		when(service.list(any(SearchDto.class))).thenReturn(invMock);
-		when(service.listByCustomer(any(SearchDto.class), anyString())).thenReturn(mockResp);
+		when(service.list(any(SortDto.class))).thenReturn(invMock);
+		when(service.listByCustomer(any(SortDto.class), anyString())).thenReturn(mockResp);
 		ResponseEntity<Collection<String>> resp = controller.list(start, limit, sort, dir, custId);
 
-		verify(service, times(0)).list(searchCaptor.capture());
-		verify(service).listByCustomer(searchCaptor.capture(), stringCaptor.capture());
-		SearchDto contDto = searchCaptor.getValue();
+		verify(service, times(0)).list(sortCaptor.capture());
+		verify(service).listByCustomer(sortCaptor.capture(), stringCaptor.capture());
+		SortDto contDto = sortCaptor.getValue();
 
 		assertEquals(resp.getStatusCode(), HttpStatus.OK);
 		assertEquals(custId, stringCaptor.getValue());
@@ -156,7 +154,7 @@ public class PhoneControllerTest {
 	@ParameterizedTest
 	@ValueSource(strings = {"c1", "a123", "valid"})
 	public void testlist_customer_valid_exception(final String custId) {
-		doThrow(RuntimeException.class).when(service).listByCustomer(any(SearchDto.class), anyString());
+		doThrow(RuntimeException.class).when(service).listByCustomer(any(SortDto.class), anyString());
 
 		RuntimeException exc = assertThrows(RuntimeException.class, () -> {
 			controller.list(anyInt(), anyInt(), anyString(), anyString(), anyString());

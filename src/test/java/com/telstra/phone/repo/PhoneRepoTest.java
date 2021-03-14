@@ -32,7 +32,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.telstra.phone.dto.Dir;
-import com.telstra.phone.dto.SearchDto;
+import com.telstra.phone.dto.SortDto;
 import com.telstra.phone.exception.ImproperDataException;
 import com.telstra.phone.model.Phone;
 
@@ -45,7 +45,7 @@ public class PhoneRepoTest {
 	private PhoneRepo repo;
 
 	@Mock
-	private SearchDto search;
+	private SortDto sort;
 
 	@Mock
 	private Comparator<Phone> comp;
@@ -73,14 +73,14 @@ public class PhoneRepoTest {
 
 		Collection<Phone> mockResp = mock(Collection.class);
 		doReturn(mockResp).when(repo).doSort(any(Collection.class), anyInt(), anyInt(), any(Comparator.class));
-		when(search.getStart()).thenReturn(1);
-		when(search.getLimit()).thenReturn(10);
+		when(sort.getStart()).thenReturn(1);
+		when(sort.getLimit()).thenReturn(10);
 
-		repo.findAllBy(search, comp);
+		repo.findAllBy(sort, comp);
 
 		verify(repo).doSort(dataCaptor.capture(), startCaptor.capture(), limitCaptor.capture(), compCaptor.capture());
-		verify(search).getStart();
-		verify(search).getLimit();
+		verify(sort).getStart();
+		verify(sort).getLimit();
 
 		assertEquals(1, startCaptor.getValue());
 		assertEquals(10, limitCaptor.getValue());
@@ -95,15 +95,15 @@ public class PhoneRepoTest {
 	@ParameterizedTest
 	@CsvSource(value = { "a1,8999999999", "a3,8999999996|8999999986", "a2,8999999983|8999999984|8999999998" })
 	public void testfindByCustomer_valid(final String custId, final String assertPhoneNumbers) {
-		final SearchDto search = mock(SearchDto.class);
+		final SortDto sortDto = mock(SortDto.class);
 		final Comparator<Phone> comp = mock(Comparator.class);
 
 		String[] assertList = assertPhoneNumbers.split("\\|");
 		
-		when(search.getDir()).thenReturn(Dir.ASC);
-		when(search.getLimit()).thenReturn(assertList.length);
+		when(sortDto.getDir()).thenReturn(Dir.ASC);
+		when(sortDto.getLimit()).thenReturn(assertList.length);
 		
-		Optional<Collection<Phone>> resp = repo.findByCustomer(search, comp, custId);
+		Optional<Collection<Phone>> resp = repo.findByCustomer(sortDto, comp, custId);
 
 		assertTrue(resp.isPresent());
 
@@ -120,25 +120,25 @@ public class PhoneRepoTest {
 	@CsvSource(value = { "6999999995", "6999999983", "SOMETHINGINVALID" })
 	public void testfindByCustomer_invalid(final String customerId) {
 		
-		final SearchDto search = mock(SearchDto.class);
+		final SortDto sortDto = mock(SortDto.class);
 		final Comparator<Phone> comp = mock(Comparator.class);
 		
-		Optional<Collection<Phone>> resp = repo.findByCustomer(search, comp, customerId);
+		Optional<Collection<Phone>> resp = repo.findByCustomer(sortDto, comp, customerId);
 		
 		assertFalse(resp.isPresent());
 		
-		verify(search, times(0)).getStart();
-		verify(search, times(0)).getLimit();
+		verify(sortDto, times(0)).getStart();
+		verify(sortDto, times(0)).getLimit();
 	}
 
 	@ParameterizedTest
 	@NullAndEmptySource
 	public void testfindByCustomer_ImproperDataException(final String customerId) {
-		final SearchDto search = mock(SearchDto.class);
+		final SortDto sortDto = mock(SortDto.class);
 		final Comparator<Phone> comp = mock(Comparator.class);
 		
 		assertThrows(ImproperDataException.class, () -> {
-			repo.findByCustomer(search, comp, customerId);
+			repo.findByCustomer(sortDto, comp, customerId);
 		});
 	}
 
@@ -187,10 +187,10 @@ public class PhoneRepoTest {
 	public void testSave_new() {
 		Collection<Phone> mockResp = mock(Collection.class);
 		doReturn(mockResp).when(repo).doSort(any(Collection.class), anyInt(), anyInt(), any(Comparator.class));
-		when(search.getStart()).thenReturn(1);
-		when(search.getLimit()).thenReturn(10);
+		when(sort.getStart()).thenReturn(1);
+		when(sort.getLimit()).thenReturn(10);
 
-		repo.findAllBy(search, comp);
+		repo.findAllBy(sort, comp);
 
 		verify(repo).doSort(dataCaptor.capture(), startCaptor.capture(), limitCaptor.capture(), compCaptor.capture());
 
@@ -200,7 +200,7 @@ public class PhoneRepoTest {
 		Phone phone = new Phone("8888888888", "8", "BrandNewCustomer");
 		repo.save(phone);
 
-		repo.findAllBy(search, comp);
+		repo.findAllBy(sort, comp);
 		verify(repo, times(2)).doSort(dataCaptor.capture(), startCaptor.capture(), limitCaptor.capture(), compCaptor.capture());
 
 		Collection<Phone> newData = dataCaptor.getValue();

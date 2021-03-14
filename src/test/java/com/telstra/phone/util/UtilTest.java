@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.telstra.phone.dto.Dir;
-import com.telstra.phone.dto.SearchDto;
+import com.telstra.phone.dto.SortDto;
 
 public class UtilTest {
 
@@ -29,9 +29,9 @@ public class UtilTest {
 
 	@ParameterizedTest
 	@CsvSource(value = { "0,10,region,ASC", "-1,-10,some,DESC", "-100,100,invalid,invalid" })
-	public void testGetSearchDto(int start, int limit, String sort, String dir) {
+	public void testGetSortDto(int start, int limit, String sort, String dir) {
 
-		SearchDto dto = Util.getSearchDto(start, limit, sort, dir);
+		SortDto dto = Util.getSortDto(start, limit, sort, dir);
 
 		assertNotNull(dto);
 		if (Util.isEmpty(dir) || !(dir.equals("ASC") || dir.equals("DESC")))
