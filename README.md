@@ -7,11 +7,11 @@ Regular spring boot app. Running the application -
 
     mvn spring-boot:run
 
-Access the application using the root context - http://localhost:8780/telstra/api/v1/
+Access the application using the root context - http://localhost:8780/test/api/v1/
 
 ## API details
 
-Regular Swagger ui api details  - http://localhost:8780/telstra/swagger-ui.html
+Regular Swagger ui api details  - http://localhost:8780/test/swagger-ui.html
 
 ![SwaggerUI](https://github.com/dsrini-open/phone_service/blob/main/swagger.png)
 
